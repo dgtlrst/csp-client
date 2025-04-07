@@ -6,16 +6,27 @@ A linux libcsp 2.0 client/server, utilizing can / uart communication interfaces.
 Tested on:
 
 **OS**: Ubuntu 24.04.2 LTS x86_64
+
 **Host**: HP EliteBook 850 G6
+
 **Kernel**: 6.11.0-21-generic
+
 **Uptime**: 4 days, 20 hours, 44 mins
+
 **Packages**: 1752 (dpkg), 10 (snap)
+
 **Shell**: bash 5.2.21
+
 **Resolution**: 1920x1080
+
 **Terminal**: /dev/pts/3
+
 **CPU**: Intel i7-8565U (8) @ 4.600GHz
+
 **GPU**: Intel WhiskeyLake-U GT2 [UHD Graphics 620]
+
 **GPU**: AMD ATI Radeon 540X/550X/630 / RX 640 / E9171 MCM
+
 **Memory**: 3593MiB / 15799MiB
 
 ## driver information
