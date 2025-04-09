@@ -1,3 +1,15 @@
+# build artifacts
+cmake_gen/
+
+# python artifacts
+__pycache__/
+
+# built binary
+cspc
+
+# Zone identifiers
+*Zone.Identifier
+
 # Prerequisites
 *.d
 

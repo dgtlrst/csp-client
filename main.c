@@ -182,13 +182,28 @@ static int csp_pthread_create(void *(*routine)(void *)) {
   return CSP_ERR_NONE;
 }
 
+
+
+
+
+
+
 static void *task_router(void *param) {
 
-  /* Here there be routing */
-  while (1) {
-    csp_route_work();
-  }
 
+    /* Here there be routing */
+
+    while (1) {
+
+
+        csp_route_work();
+
+    }
+
+
+
+
+    
   return NULL;
 }
 
