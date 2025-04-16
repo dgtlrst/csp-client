@@ -1,4 +1,7 @@
  # libcsp-2-linux
+
+**TODO: clean up**
+
 A linux libcsp 2.0 client/server, utilizing can / uart communication interfaces.
 
 This is using https://github.com/libcsp/libcsp/tree/develop
