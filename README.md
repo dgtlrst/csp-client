@@ -34,6 +34,8 @@ option(CSP_HAVE_LIBZMQ "Use libzmq" ON)
 option(CSP_USE_RTABLE "Use routing table" ON)
 ```
 
+alternatively, pass these in from the project's CMakeLists.txt itself
+
 ## system information
 
 Tested on:
