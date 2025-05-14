@@ -26,6 +26,14 @@ socat -dd pty,raw,echo=0,link=/tmp/pty1 pty,raw,echo=0,link=/tmp/pty2
 
 This command creates two virtual TTY ports (`/tmp/pty1` and `/tmp/pty2`) that are connected to each other. Any data written to one port will be available for reading on the other port.
 
+You can verify that the virtual ports have been created successfully with:
+
+```bash
+ls -la /tmp/pty*
+```
+
+This should show both `/tmp/pty1` and `/tmp/pty2` as symbolic links to their respective `/dev/pts/XX` devices.
+
 ## Running the UART Communication Program
 
 After setting up the virtual TTY ports, you can run two instances of the program to simulate communication between two nodes:

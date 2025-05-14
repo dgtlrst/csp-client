@@ -1,12 +1,15 @@
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <stdio.h>
 #include <errno.h>
 #include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <unistd.h>
 
 #include <csp/csp.h>
+#include <csp/csp_crc32.h>
 #include <csp/csp_debug.h>
+#include <csp/csp_id.h>
 #include <csp/drivers/usart.h>
 
 /* Configuration */
@@ -25,7 +28,8 @@ static csp_iface_t *uart_iface = &uart_iface_data;
 static char uart_ifname[16] = "UART";
 
 /* Custom UART interface callback */
-static void uart_rx_callback(void *user_data, uint8_t *data, size_t data_size, void *pxTaskWoken) {
+static void uart_rx_callback(void *user_data, uint8_t *data, size_t data_size,
+                             void *pxTaskWoken) {
     /* Create a packet from the received data */
     csp_packet_t *packet = csp_buffer_get(data_size);
     if (packet == NULL) {
@@ -33,12 +37,48 @@ static void uart_rx_callback(void *user_data, uint8_t *data, size_t data_size, v
         return;
     }
 
-    /* Copy data to packet */
-    memcpy(packet->data, data, data_size);
-    packet->length = data_size;
+    /* Copy data to packet's frame begin area */
+    memcpy(packet->frame_begin, data, data_size);
+    packet->frame_length = data_size;
+
+    /* Setup RX packet (strip CSP header) */
+    if (csp_id_strip(packet) != 0) {
+        csp_print("Failed to strip CSP header, discarding packet\n");
+        csp_buffer_free(packet);
+        uart_iface->rx_error++;
+        return;
+    }
+
+    /* Update statistics */
+    uart_iface->rx++;
+    uart_iface->rxbytes += data_size;
 
     /* Process the packet */
     csp_qfifo_write(packet, uart_iface, pxTaskWoken);
+}
+
+/* UART interface transmit function */
+static int uart_tx(csp_iface_t *iface, uint16_t via, csp_packet_t *packet,
+                   int from_me) {
+    /* Add CSP header */
+    csp_id_prepend(packet);
+
+    /* Write data to UART */
+    if (csp_usart_write(uart_fd, packet->frame_begin, packet->frame_length) !=
+        CSP_ERR_NONE) {
+        iface->tx_error++;
+        csp_buffer_free(packet);
+        return CSP_ERR_DRIVER;
+    }
+
+    /* Update statistics */
+    iface->tx++;
+    iface->txbytes += packet->frame_length;
+
+    /* Free packet */
+    csp_buffer_free(packet);
+
+    return CSP_ERR_NONE;
 }
 
 /* Server task */
@@ -48,11 +88,9 @@ void server_task(void) {
     csp_packet_t *packet;
 
     /* Create socket and listen for incoming connections */
-    csp_socket_init(&sock);
+    memset(&sock, 0, sizeof(sock));
     csp_bind(&sock, CSP_ANY);
     csp_listen(&sock, 5);
-
-    csp_print("Server listening on port %d\n", SERVER_PORT);
 
     while (1) {
         /* Wait for connection (timeout 1000ms) */
@@ -62,8 +100,10 @@ void server_task(void) {
 
         /* Read packets on connection */
         while ((packet = csp_read(conn, 100)) != NULL) {
-            csp_print("Packet received: %s\n", (char *)packet->data);
-            csp_buffer_free(packet);
+            /* Use the standard CSP service handler for all packets */
+            /* This will automatically handle ping requests and other CSP
+             * services */
+            csp_service_handler(packet);
         }
 
         /* Close connection */
@@ -73,41 +113,12 @@ void server_task(void) {
 
 /* Client task */
 void client_task(void) {
-    csp_conn_t *conn;
-    csp_packet_t *packet;
-
-    /* Ping the server */
+    /* Ping the server using standard csp_ping */
+    csp_print("[ping] to [%d]\n", dest_addr);
     int ping_result = csp_ping(dest_addr, 1000, 8, CSP_O_NONE);
-    csp_print("Ping result: %d ms\n", ping_result);
 
-    /* Connect to server */
-    conn = csp_connect(CSP_PRIO_NORM, dest_addr, SERVER_PORT, 1000, CSP_O_NONE);
-    if (conn == NULL) {
-        csp_print("Connection failed\n");
-        return;
-    }
-
-    /* Create packet */
-    packet = csp_buffer_get(100);
-    if (packet == NULL) {
-        csp_print("Failed to get buffer\n");
-        csp_close(conn);
-        return;
-    }
-
-    /* Fill packet with data */
-    const char *msg = "Hello from CSP UART node";
-    memcpy(packet->data, msg, strlen(msg) + 1);
-    packet->length = strlen(msg) + 1;
-
-    /* Send packet */
-    if (csp_send(conn, packet) != CSP_ERR_NONE) {
-        csp_print("Send failed\n");
-        csp_buffer_free(packet);
-    }
-
-    /* Close connection */
-    csp_close(conn);
+    /* Sleep for 1 second to maintain a 1-second ping rate */
+    sleep(1);
 }
 
 /* Thread functions */
@@ -126,7 +137,8 @@ static void *server_thread(void *param) {
 static void *client_thread(void *param) {
     while (1) {
         client_task();
-        sleep(5);  /* Send message every 5 seconds */
+        /* No additional sleep needed - client_task already sleeps for 1 second
+         */
     }
     return NULL;
 }
@@ -167,8 +179,9 @@ static int init_uart_interface(void) {
     memset(uart_iface, 0, sizeof(*uart_iface));
     uart_iface->name = uart_ifname;
     uart_iface->addr = node_addr;
-    uart_iface->netmask = CSP_ID_HOST_MASK;
+    uart_iface->netmask = csp_id_get_host_bits();
     uart_iface->is_default = 1;
+    uart_iface->nexthop = uart_tx;
 
     /* Add interface to CSP */
     csp_iflist_add(uart_iface);
@@ -181,21 +194,25 @@ int main(int argc, char *argv[]) {
     int opt;
     while ((opt = getopt(argc, argv, "a:d:u:h")) != -1) {
         switch (opt) {
-            case 'a':
-                node_addr = atoi(optarg);
-                break;
-            case 'd':
-                dest_addr = atoi(optarg);
-                break;
-            case 'u':
-                uart_device = optarg;
-                break;
-            case 'h':
-                printf("Usage: %s [-a node_addr] [-d dest_addr] [-u uart_device]\n", argv[0]);
-                return 0;
-            default:
-                fprintf(stderr, "Usage: %s [-a node_addr] [-d dest_addr] [-u uart_device]\n", argv[0]);
-                return 1;
+        case 'a':
+            node_addr = atoi(optarg);
+            break;
+        case 'd':
+            dest_addr = atoi(optarg);
+            break;
+        case 'u':
+            uart_device = optarg;
+            break;
+        case 'h':
+            printf("Usage: %s [-a node_addr] [-d dest_addr] [-u uart_device]\n",
+                   argv[0]);
+            return 0;
+        default:
+            fprintf(
+                stderr,
+                "Usage: %s [-a node_addr] [-d dest_addr] [-u uart_device]\n",
+                argv[0]);
+            return 1;
         }
     }
 
