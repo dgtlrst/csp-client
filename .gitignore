@@ -1,3 +1,6 @@
+# build artifacts C
+build/
+
 # build artifacts
 cmake_gen/
 

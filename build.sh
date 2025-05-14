@@ -28,10 +28,16 @@ else
     exit 1
 fi
 
-# Copy binary
+# Copy binaries
 mv cspc ../
+mv uart_comm ../
 
 # Move back to the parent directory
 cd ..
 
 echo "Build script completed successfully."
+echo
+echo "To run the UART communication program:"
+echo "  1. Set up socat: socat -dd pty,raw,echo=0,link=/tmp/pty1 pty,raw,echo=0,link=/tmp/pty2"
+echo "  2. Run first node: ./uart_comm -a 1 -d 2 -u /tmp/pty1"
+echo "  3. Run second node: ./uart_comm -a 2 -d 1 -u /tmp/pty2"

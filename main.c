@@ -30,8 +30,7 @@ typedef struct {
 int router_start(void);
 int client_start(void);
 
-/* Server port, the port the server listens on for incoming connections from the
- * client. */
+/* Server port, the port the server listens on for incoming connections from the client. */
 #define SERVER_PORT 10
 
 /* Commandline options */
