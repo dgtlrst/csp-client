@@ -1,0 +1,26 @@
+{
+    "files.associations": {
+        "*.h": "c",
+        "*.c": "c"
+    },
+    "C_Cpp.default.includePath": [
+        "${workspaceFolder}",
+        "${workspaceFolder}/csp/include",
+        "${workspaceFolder}/csp/src"
+    ],
+    "C_Cpp.default.defines": [
+        "_GNU_SOURCE"
+    ],
+    "C_Cpp.default.compilerPath": "/usr/bin/gcc",
+    "C_Cpp.default.cStandard": "c11",
+    "C_Cpp.default.intelliSenseMode": "linux-gcc-x64",
+    "files.exclude": {
+        "**/cmake_gen": true,
+        "**/__pycache__": true,
+        "**/*.pyc": true
+    },
+    "search.exclude": {
+        "**/cmake_gen": true,
+        "**/__pycache__": true
+    }
+}
