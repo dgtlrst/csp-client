@@ -41,6 +41,14 @@ static void uart_rx_callback(void *user_data, uint8_t *data, size_t data_size,
     memcpy(packet->frame_begin, data, data_size);
     packet->frame_length = data_size;
 
+    csp_print("RX: len=%u src=%u dst=%u sport=%u dport=%u pri=%u flags=0x%02X frame=[", 
+              packet->frame_length, packet->id.src, packet->id.dst,
+              packet->id.sport, packet->id.dport, packet->id.pri, 
+              packet->id.flags);
+    for(int i = 0; i < packet->frame_length; i++) 
+        csp_print("%02X", packet->frame_begin[i]); 
+    csp_print("]\n");
+
     /* Setup RX packet (strip CSP header) */
     if (csp_id_strip(packet) != 0) {
         csp_print("Failed to strip CSP header, discarding packet\n");
@@ -112,7 +120,17 @@ void server_task(void) {
             /* Use the standard CSP service handler for all packets */
             /* This will automatically handle ping requests and other CSP
              * services */
-            csp_service_handler(packet);
+            // csp_service_handler(packet);
+            switch (packet->id.dport)
+            {
+                case CSP_PING:
+                    csp_print("ping received\n");
+                    break;
+                default:
+                    csp_print("Packet received on SERVER_PORT: %s\n", (char *) packet->data);
+                    csp_buffer_free(packet);
+                    break;
+            }
         }
 
         /* Close connection */
