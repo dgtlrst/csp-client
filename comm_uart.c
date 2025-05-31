@@ -63,6 +63,15 @@ static int uart_tx(csp_iface_t *iface, uint16_t via, csp_packet_t *packet,
     /* Add CSP header */
     csp_id_prepend(packet);
 
+    csp_print("TX: len=%u src=%u dst=%u sport=%u dport=%u pri=%u flags=0x%02X "
+              "frame=[",
+              packet->frame_length, packet->id.src, packet->id.dst,
+              packet->id.sport, packet->id.dport, packet->id.pri,
+              packet->id.flags);
+    for (int i = 0; i < packet->frame_length; i++)
+        csp_print("%02X", packet->frame_begin[i]);
+    csp_print("]\n");
+
     /* Write data to UART */
     if (csp_usart_write(uart_fd, packet->frame_begin, packet->frame_length) !=
         CSP_ERR_NONE) {
@@ -114,7 +123,7 @@ void server_task(void) {
 /* Client task */
 void client_task(void) {
     /* Ping the server using standard csp_ping */
-    csp_print("[ping] to [%d]\n", dest_addr);
+    // csp_print("[ping] to [%d]\n", dest_addr);
     int ping_result = csp_ping(dest_addr, 1000, 8, CSP_O_NONE);
 
     /* Sleep for 1 second to maintain a 1-second ping rate */

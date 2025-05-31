@@ -6,12 +6,46 @@ A linux libcsp 2.0 client/server, utilizing can / uart communication interfaces.
 
 This is using https://github.com/libcsp/libcsp/tree/develop
 
-Make sure you have the following installed on your system:
+## Building
 
-- `sudo apt install libsocketcan2 libsocketcan-dev`
-- `sudo apt install can-utils`
-- `peak_can drivers`
-- `sudo apt install pkg-config`
+The build script will automatically install the required dependencies and build the project:
+
+```bash
+sudo ./build.sh
+```
+
+The script will install the following dependencies automatically:
+- `libsocketcan2 libsocketcan-dev` - SocketCAN libraries
+- `can-utils` - CAN utilities
+- `pkg-config` - Package configuration tool
+- `cmake` - Build system generator
+- `ninja-build` - Build system
+- `clang-format` - Code formatting tool
+- Checks for PEAK CAN drivers availability
+
+**Note:** The script requires sudo privileges to install system dependencies, but the actual build process runs as the original user to maintain proper file ownership.
+
+## Scripts
+
+The project includes several utility scripts:
+
+- **`build.sh`** - Automatically installs dependencies and builds the project
+- **`clean.sh`** - Cleans build artifacts and generated files
+- **`format.sh`** - Formats C code using the project's formatting rules
+
+## VSCode Integration
+
+If you're using Visual Studio Code, you can use the predefined tasks:
+
+1. **Open Command Palette** (`Ctrl+Shift+P` or `Cmd+Shift+P`)
+2. **Type "Tasks: Run Task"**
+3. **Select from available tasks:**
+   - `build` - Build the project (equivalent to `sudo ./build.sh`)
+   - `clean` - Clean build artifacts (equivalent to `./clean.sh`)
+   - `format` - Format code (equivalent to `./format.sh`)
+
+**Keyboard Shortcuts:**
+- `Ctrl+Shift+P` → "Tasks: Run Build Task" → Select "build" (or use `Ctrl+Shift+B`)
 
 To see output (csp_print) and to use the tool, please enable the following options inside the `csp` CMakeLists.txt file:
 
