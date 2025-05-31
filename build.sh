@@ -9,29 +9,41 @@ check_sudo() {
     fi
 }
 
+# Function to check if a package is installed
+is_package_installed() {
+    dpkg -l "$1" 2>/dev/null | grep -q "^ii"
+}
+
+# Function to install a package if not already installed
+install_if_needed() {
+    local package="$1"
+    local description="$2"
+
+    if is_package_installed "$package"; then
+        echo "$description is already installed."
+    else
+        echo "Installing $description ($package)..."
+        apt install -y "$package"
+    fi
+}
+
 # Function to install required dependencies
 install_dependencies() {
-    echo "Installing required dependencies..."
+    echo "Checking and installing required dependencies..."
 
     # Update package list
     echo "Updating package list..."
     apt update
 
     # Install required packages
-    echo "Installing libsocketcan2 and libsocketcan-dev..."
-    apt install -y libsocketcan2 libsocketcan-dev
-
-    echo "Installing can-utils..."
-    apt install -y can-utils
-
-    echo "Installing pkg-config..."
-    apt install -y pkg-config
-
-    echo "Installing cmake and ninja-build..."
-    apt install -y cmake ninja-build
-
-    echo "Installing clang-format..."
-    apt install -y clang-format
+    install_if_needed "gcc" "GCC compiler"
+    install_if_needed "libsocketcan2" "SocketCAN library"
+    install_if_needed "libsocketcan-dev" "SocketCAN development headers"
+    install_if_needed "can-utils" "CAN utilities"
+    install_if_needed "pkg-config" "Package configuration tool"
+    install_if_needed "cmake" "CMake build system"
+    install_if_needed "ninja-build" "Ninja build system"
+    install_if_needed "clang-format" "Clang code formatter"
 
     # Check if PEAK CAN drivers are available in the kernel
     echo "Checking for PEAK CAN drivers..."

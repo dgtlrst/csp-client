@@ -14,7 +14,8 @@ The build script will automatically install the required dependencies and build 
 sudo ./build.sh
 ```
 
-The script will install the following dependencies automatically:
+The script will check and install the following dependencies automatically (only if not already installed):
+- `gcc` - GCC compiler
 - `libsocketcan2 libsocketcan-dev` - SocketCAN libraries
 - `can-utils` - CAN utilities
 - `pkg-config` - Package configuration tool
