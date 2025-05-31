@@ -22,6 +22,7 @@ The script will check and install the following dependencies automatically (only
 - `cmake` - Build system generator
 - `ninja-build` - Build system
 - `clang-format` - Code formatting tool
+- `socat` - Socket relay tool (for UART testing)
 - Checks for PEAK CAN drivers availability
 
 **Note:** The script requires sudo privileges to install system dependencies, but the actual build process runs as the original user to maintain proper file ownership.

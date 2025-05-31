@@ -44,6 +44,7 @@ install_dependencies() {
     install_if_needed "cmake" "CMake build system"
     install_if_needed "ninja-build" "Ninja build system"
     install_if_needed "clang-format" "Clang code formatter"
+    install_if_needed "socat" "Socket relay tool"
 
     # Check if PEAK CAN drivers are available in the kernel
     echo "Checking for PEAK CAN drivers..."
