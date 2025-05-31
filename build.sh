@@ -122,5 +122,5 @@ echo "Build script completed successfully."
 echo
 echo "To run the UART communication program:"
 echo "  1. Set up socat: sudo socat -v PTY,link=/dev/ttyV0,raw,echo=0,mode=666 PTY,link=/dev/ttyV1,raw,echo=0,mode=666"
-echo "  2. Run first node: ./uart_comm -a 1 -d 2 -u /tmp/ttyV0"
-echo "  3. Run second node: ./uart_comm -a 2 -d 1 -u /tmp/ttyV1"
+echo "  2. Run first node: ./uart_comm -a 1 -d 2 -u /dev/ttyV0"
+echo "  3. Run second node: ./uart_comm -a 2 -d 1 -u /dev/ttyV1"
