@@ -29,7 +29,7 @@ static void uart_rx_callback(void *user_data, uint8_t *data, size_t data_size,
     csp_packet_t *packet = csp_buffer_get(data_size);
 
     if (packet == NULL) {
-        csp_print("Failed to get buffer for RX packet\n");
+        csp_print("failed to get buffer for RX packet\n");
         return;
     }
 
@@ -114,6 +114,7 @@ void server_task(void) {
             {
                 case CSP_PING:
                     csp_print("ping received\n");
+                    csp_buffer_free(packet);
                     break;
                 default:
                     csp_print("pkt received on SERVER_PORT: %s\n", (char *) packet->data);
