@@ -1,75 +1,71 @@
 #!/bin/bash
 
-# Function to check if running with sudo privileges
+# function to check if running with sudo privileges
 check_sudo() {
     if [ "$EUID" -ne 0 ]; then
-        echo "This script requires sudo privileges to install dependencies."
-        echo "Please run with: sudo ./build.sh"
+        echo "sudo required to install dependencies"
         exit 1
     fi
 }
 
-# Function to check if a package is installed
+# function to check if a package is installed
 is_package_installed() {
     dpkg -l "$1" 2>/dev/null | grep -q "^ii"
 }
 
-# Function to install a package if not already installed
+# function to install a package if not already installed
 install_if_needed() {
     local package="$1"
     local description="$2"
 
     if is_package_installed "$package"; then
-        echo "$description is already installed."
+        echo "$description is already installed"
     else
-        echo "Installing $description ($package)..."
+        echo "installing $description ($package).."
         apt install -y "$package"
     fi
 }
 
-# Function to install required dependencies
+# install deps
 install_dependencies() {
-    echo "Checking and installing required dependencies..."
-
-    # Update package list
-    echo "Updating package list..."
+    # update package list
     apt update
 
-    # Install required packages
-    install_if_needed "gcc" "GCC compiler"
-    install_if_needed "libsocketcan2" "SocketCAN library"
-    install_if_needed "libsocketcan-dev" "SocketCAN development headers"
-    install_if_needed "can-utils" "CAN utilities"
-    install_if_needed "pkg-config" "Package configuration tool"
-    install_if_needed "cmake" "CMake build system"
-    install_if_needed "ninja-build" "Ninja build system"
-    install_if_needed "clang-format" "Clang code formatter"
-    install_if_needed "socat" "Socket relay tool"
+    # install required packages
+    install_if_needed "gcc" "gcc compiler"
+    install_if_needed "libsocketcan2" "socketcan library"
+    install_if_needed "libsocketcan-dev" "socketcan development headers"
+    install_if_needed "can-utils" "can utilities"
+    install_if_needed "pkg-config" "package configuration tool"
+    install_if_needed "cmake" "cmake build system"
+    install_if_needed "ninja-build" "ninja build system"
+    install_if_needed "clang-format" "clang code formatter"
+    install_if_needed "socat" "socket relay tool"
 
     # Check if PEAK CAN drivers are available in the kernel
-    echo "Checking for PEAK CAN drivers..."
+    echo "checking for peack can drivers.."
     if lsmod | grep -q "peak_usb\|pcan"; then
-        echo "PEAK CAN drivers are already loaded."
+        echo "peack can drivers are already loaded"
     else
-        echo "PEAK CAN drivers not found in loaded modules."
-        echo "Note: PEAK CAN drivers may need to be installed separately."
-        echo "For PEAK USB adapters, the peak_usb driver should be available in the kernel."
-        echo "For other PEAK adapters, you may need to install drivers from PEAK-System."
+        echo "peak can drivers not found in loaded modules"
+        echo "note: PEAK CAN drivers may need to be installed separately"
+        echo "for peak usb adapters, the peak_usb driver should be available in the kernel"
+        echo "for other peak adapters, you may need to install drivers from peak-system"
     fi
 
-    echo "Dependencies installation completed."
+    echo "dependency installation complete"
     echo
 }
 
-# Check for sudo privileges and install dependencies
+# check for sudo privileges and install dependencies
 check_sudo
 install_dependencies
 
-# Get the original user who invoked sudo (if any)
+# get the original user who invoked sudo (if any)
 ORIGINAL_USER=${SUDO_USER:-$(whoami)}
 ORIGINAL_HOME=$(eval echo ~$ORIGINAL_USER)
 
-# Function to run commands as the original user
+# function to run commands as the original user
 run_as_user() {
     if [ "$ORIGINAL_USER" != "root" ]; then
         sudo -u "$ORIGINAL_USER" "$@"
@@ -78,49 +74,50 @@ run_as_user() {
     fi
 }
 
-# Check if a directory called "build" exists
+# check if a directory called "build" exists
 if [ -d "cmake_gen" ]; then
     # If it exists, remove it
-    echo "Removing existing build directory..."
+    echo "removing existing build directory.."
     rm -rf cmake_gen
 fi
 
-# Create a new build directory
-echo "Creating new build directory..."
+# create a new build directory
+echo "creating new build directory.."
 run_as_user mkdir cmake_gen
 
-# Change directory into the build directory
+# change directory into the build directory
 cd cmake_gen
 
-# Run cmake with Ninja generator
-echo "Running cmake..."
+# run cmake with Ninja generator
+echo "running cmake.."
 run_as_user cmake -G Ninja ..
 
-# Check if cmake was successful
+# check if cmake was successful
 if [ $? -eq 0 ]; then
-    # Run ninja
-    echo "Running ninja..."
+    # run ninja
+    echo "running ninja..."
     run_as_user ninja
 else
-    echo "Cmake configuration failed. Exiting."
+    echo "cmake configuration failed..exiting"
     exit 1
 fi
 
-# Copy binaries
+# copy binaries
 run_as_user mv cspc ../
 run_as_user mv uart_comm ../
 
-# Move back to the parent directory
+# move back to the parent directory
 cd ..
 
-# Fix ownership of generated files
+# fix ownership of generated files
 if [ "$ORIGINAL_USER" != "root" ]; then
     chown -R "$ORIGINAL_USER:$ORIGINAL_USER" .
 fi
 
-echo "Build script completed successfully."
 echo
-echo "To run the UART communication program:"
-echo "  1. Set up socat: sudo socat -v PTY,link=/dev/ttyV0,raw,echo=0,mode=666 PTY,link=/dev/ttyV1,raw,echo=0,mode=666"
-echo "  2. Run first node: ./uart_comm -a 1 -d 2 -u /dev/ttyV0"
-echo "  3. Run second node: ./uart_comm -a 2 -d 1 -u /dev/ttyV1"
+echo "| build complete |"
+echo
+echo "run:"
+echo " - set up socat: sudo socat -v PTY,link=/dev/ttyV0,raw,echo=0,mode=666 PTY,link=/dev/ttyV1,raw,echo=0,mode=666"
+echo " - run first node: ./uart_comm -a 1 -d 2 -u /dev/ttyV0"
+echo " - run second node: ./uart_comm -a 2 -d 1 -u /dev/ttyV1"

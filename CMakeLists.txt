@@ -5,7 +5,7 @@ project(${PROJECT} C)
 set(source main.c)
 set(uart_source comm_uart.c)
 
-# Pre-configure CSP settings
+# pre-configure CSP settings
 set(CSP_HAVE_STDIO ON CACHE BOOL "OS provides C Standard I/O functions")
 set(CSP_ENABLE_CSP_PRINT ON CACHE BOOL "Enable csp_print() function")
 set(CSP_PRINT_STDIO ON CACHE BOOL "Use vprintf() for csp_print() function")
@@ -23,23 +23,23 @@ set(CSP_HAVE_LIBSOCKETCAN ON CACHE BOOL "Use libsocketcan")
 set(CSP_HAVE_LIBZMQ ON CACHE BOOL "Use libzmq")
 set(CSP_USE_RTABLE ON CACHE BOOL "Use routing table")
 
-# Add the csp subdirectory
+# add the csp subdirectory
 add_subdirectory(csp)
 
-# Define the executables for the project
+# define the executables for the project
 add_executable(${PROJECT} ${source})
 add_executable(uart_comm ${uart_source})
 
-# Ensure the CSP library is built before the executables
+# ensure the CSP library is built before the executables
 add_dependencies(${PROJECT} csp)
 add_dependencies(uart_comm csp)
 
-# Configure compilation options
+# configure compilation options
 target_compile_options(${PROJECT} PUBLIC -g -fdiagnostics-color=always)
 target_compile_options(uart_comm PUBLIC -g -fdiagnostics-color=always)
 target_compile_definitions(${PROJECT} PUBLIC -D_GNU_SOURCE)
 target_compile_definitions(uart_comm PUBLIC -D_GNU_SOURCE)
 
-# Link the CSP library with the project executables
+# link the CSP library with the project executables
 target_link_libraries(${PROJECT} csp)
 target_link_libraries(uart_comm csp pthread)
