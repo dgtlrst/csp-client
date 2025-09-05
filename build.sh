@@ -105,6 +105,7 @@ fi
 # copy binaries
 run_as_user mv cspc ../
 run_as_user mv uart_comm ../
+run_as_user mv kiss_comm ../
 
 # move back to the parent directory
 cd ..
@@ -119,5 +120,7 @@ echo "| build complete |"
 echo
 echo "run:"
 echo " - set up socat: sudo socat -v PTY,link=/dev/ttyV0,raw,echo=0,mode=666 PTY,link=/dev/ttyV1,raw,echo=0,mode=666"
-echo " - run first node: ./uart_comm -a 1 -d 2 -u /dev/ttyV0"
-echo " - run second node: ./uart_comm -a 2 -d 1 -u /dev/ttyV1"
+echo " - run first uart node: ./uart_comm -a 1 -d 2 -u /dev/ttyV0"
+echo " - run second uart node: ./uart_comm -a 2 -d 1 -u /dev/ttyV1"
+echo " - run first kiss node: ./kiss_comm -a 1 -d 2 -k /dev/ttyV0"
+echo " - run second kiss node: ./kiss_comm -a 2 -d 1 -k /dev/ttyV1"

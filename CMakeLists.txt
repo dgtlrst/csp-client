@@ -4,6 +4,7 @@ project(${PROJECT} C)
 
 set(source main.c)
 set(uart_source comm_uart.c)
+set(kiss_source comm_kiss.c)
 
 # pre-configure CSP settings
 set(CSP_HAVE_STDIO ON CACHE BOOL "OS provides C Standard I/O functions")
@@ -29,17 +30,22 @@ add_subdirectory(csp)
 # define the executables for the project
 add_executable(${PROJECT} ${source})
 add_executable(uart_comm ${uart_source})
+add_executable(kiss_comm ${kiss_source})
 
 # ensure the CSP library is built before the executables
 add_dependencies(${PROJECT} csp)
 add_dependencies(uart_comm csp)
+add_dependencies(kiss_comm csp)
 
 # configure compilation options
 target_compile_options(${PROJECT} PUBLIC -g -fdiagnostics-color=always)
 target_compile_options(uart_comm PUBLIC -g -fdiagnostics-color=always)
+target_compile_options(kiss_comm PUBLIC -g -fdiagnostics-color=always)
 target_compile_definitions(${PROJECT} PUBLIC -D_GNU_SOURCE)
 target_compile_definitions(uart_comm PUBLIC -D_GNU_SOURCE)
+target_compile_definitions(kiss_comm PUBLIC -D_GNU_SOURCE)
 
 # link the CSP library with the project executables
 target_link_libraries(${PROJECT} csp)
 target_link_libraries(uart_comm csp pthread)
+target_link_libraries(kiss_comm csp pthread)
