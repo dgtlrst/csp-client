@@ -20,8 +20,9 @@ set(CSP_BUFFER_COUNT 15 CACHE STRING "Number of total packet buffers")
 set(CSP_RDP_MAX_WINDOW 5 CACHE STRING "Max window size for RDP")
 set(CSP_RTABLE_SIZE 10 CACHE STRING "Number of elements in routing table")
 
-set(CSP_HAVE_LIBSOCKETCAN ON CACHE BOOL "Use libsocketcan")
-set(CSP_HAVE_LIBZMQ ON CACHE BOOL "Use libzmq")
+# Let CMake auto-detect these optional dependencies
+# set(CSP_HAVE_LIBSOCKETCAN ON CACHE BOOL "Use libsocketcan")
+# set(CSP_HAVE_LIBZMQ ON CACHE BOOL "Use libzmq")
 set(CSP_USE_RTABLE ON CACHE BOOL "Use routing table")
 
 # add the csp subdirectory
