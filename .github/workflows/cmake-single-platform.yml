@@ -19,12 +19,11 @@ jobs:
     - name: Update submodules
       run: git submodule update --init --recursive
 
-    - name: config cmake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+    - name: build with dependencies
+      run: sudo ./build.sh
 
-    - name: build
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
-
-    - name: test
-      working-directory: ${{github.workspace}}/build
-      run: ctest -C ${{env.BUILD_TYPE}}
+    - name: verify binaries
+      run: |
+        ls -la cspc uart_comm kiss_comm
+        ./kiss_comm -h
+        ./uart_comm -h
