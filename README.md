@@ -32,3 +32,18 @@ option(CSP_USE_RTABLE "Use routing table" ON)
 ```
 
 alternatively, pass these in from the project's CMakeLists.txt itself. Note that this can be already done. Attempt to build first, and only if you have issues, refer to the CMakeLists.txt file.
+
+## For compatibility with KISS
+
+The KISS frames produced by this client are structured:
+
+```
+C0 00 [6-byte CSP header] [8-byte ping data] [4-byte CRC32] C0
+```
+
+For the server to successfully interpret KISS frames from any node, the following must be completed:
+- wrap regular CSP packet with `0xC0 0x00` and `0xC0`
+- calculate and append CRC32 to the end of the packet
+- append `0xC0` to the end of the packet
+
+The CRC32 is part of the protocol and is not the application-level connection option checksum.
