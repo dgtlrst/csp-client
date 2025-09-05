@@ -1,9 +1,11 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <csp/csp.h>
-#include <csp/drivers/can_socketcan.h>
 #include <csp/csp_id.h>
+#ifdef CSP_HAVE_LIBSOCKETCAN
+#include <csp/drivers/can_socketcan.h>
 #include <linux/can.h>
+#endif
 #include <pthread.h>
 #include <errno.h>
 #include <net/if.h>
@@ -22,6 +24,7 @@ static unsigned int successful_ping = 0;
 int router_start(void);
 int client_start(void);
 
+#ifdef CSP_HAVE_LIBSOCKETCAN
 typedef struct {
     char name[CSP_IFLIST_NAME_MAX + 1];
     csp_iface_t iface;
@@ -29,6 +32,7 @@ typedef struct {
     pthread_t rx_thread;
     int socket;
 } can_ctx_t;
+#endif
 
 // server thread
 void server(void) {
@@ -199,6 +203,7 @@ int main(int argc, char *argv[]) {
     csp_iface_t *default_iface = NULL;
 
     /* init CAN interface */
+#ifdef CSP_HAVE_LIBSOCKETCAN
     csp_print("if there is RTNETLINK: the operation is not permitted -> this is because the can device is already UP\r\n");
 
     if (can_device) {
@@ -209,6 +214,12 @@ int main(int argc, char *argv[]) {
             exit(EXIT_FAILURE);
         }
     }
+#else
+    if (can_device) {
+        csp_print("CAN support not available - libsocketcan not found during build\n");
+        exit(EXIT_FAILURE);
+    }
+#endif
 
     // set routing table
     csp_rtable_set(destination_addr, -1, default_iface, CSP_NO_VIA_ADDRESS);

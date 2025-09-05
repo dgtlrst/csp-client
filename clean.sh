@@ -8,7 +8,9 @@ fi
 
 # remove generated binaries
 echo "deleting existing binaries.."
-if [ -f "cspc" ] || [ -f "uart_comm" ]; then
+if  [ -f "cspc" ] || 
+    [ -f "kiss_comm" ] || 
+    [ -f "uart_comm" ]; then
     rm -f cspc uart_comm
 fi
 

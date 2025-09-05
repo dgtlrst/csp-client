@@ -9,6 +9,8 @@ __pycache__/
 
 # built binary
 cspc
+kiss_comm
+uart_comm
 
 # Zone identifiers
 *Zone.Identifier
